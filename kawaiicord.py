@@ -1,7 +1,11 @@
-# File: DiscoEgirl.py
+# File: DiscoEgirl.py (Updated)
 import random
 import click
+import logging
 from collections import defaultdict
+
+# Set up logging
+logging.basicConfig(level=logging.INFO, filename='discoegirl.log', filemode='a', format='%(name)s - %(levelname)s - %(message)s')
 
 # Context and memory for conversation
 context = {
@@ -34,34 +38,18 @@ def random_apostrophe(word):
 def random_capitalize(text):
     return ''.join(random.choice([char.upper(), char.lower()]) for char in text)
 
-def random_text_effects(text):
-    effects = [lambda s: s, lambda s: f"*{s}*", lambda s: f"**{s}**", lambda s: f"~~{s}~~", lambda s: f"_{s}_"]
-    return ''.join(random.choice(effects)(char) if char.isalpha() else char for char in text)
-
-def introduce_typo(word):
-    if random.random() < 0.1:  # 10% chance to introduce a typo
-        index = random.randint(0, len(word) - 1)
-        typo_word = word[:index] + random.choice('abcdefghijklmnopqrstuvwxyz') + word[index + 1:]
-        return typo_word
-    return word
-
-def dynamic_insertion(text, user_name):
-    parts = text.split()
-    for i in range(len(parts)):
-        if random.random() < 0.1:  # 10% chance to insert user name or emoji
-            parts[i] = f"{user_name} " + parts[i] if random.choice([True, False]) else parts[i]
-            parts[i] = parts[i] + " " + random.choice(["^-^", ":3", "uwu", "xd", ">///<", "*-*", "^_^", "n_n", "<3", ":d", "❤", "✨"]) if random.choice([True, False]) else parts[i]
-    return ' '.join(parts)
-
 def nlp_process(message):
     # Very basic NLP processing
     words = message.lower().split()
     return words
 
 def generate_response(message):
+    logging.info(f"User message: {message}")
+
     # Update mood occasionally
     if random.random() < 0.3:
         update_mood()
+        logging.info(f"Updated mood: {context['mood']}")
 
     # Lowercase message for easier keyword matching
     message_lower = message.lower()
@@ -150,9 +138,11 @@ def generate_response(message):
     for word in words:
         if word in keyword_responses:
             template = random.choice(keyword_responses[word])
+            logging.info(f"Selected template: {template}")
             break
     else:
         template = random.choice(templates["general"])
+        logging.info(f"Selected general template: {template}")
 
     # Fill in template with dynamic content
     response = template.format(
@@ -164,13 +154,11 @@ def generate_response(message):
         user_name=context["user_name"]
     )
 
-    # Randomize apostrophes, capitalization, text effects, and introduce typos
+    # Randomize apostrophes and capitalization
     response = random_apostrophe(response)
     response = random_capitalize(response)
-    response = random_text_effects(response)
-    response = ' '.join([introduce_typo(word) for word in response.split()])
-    response = dynamic_insertion(response, context["user_name"])
 
+    logging.info(f"Generated response: {response}")
     return response
 
 @click.command()
@@ -185,6 +173,7 @@ def chat(message, name):
         response = generate_response(message)
         click.echo(f"E-girl: {response}")
     except Exception as e:
+        logging.error(f"Error: {e}")
         click.echo(f"Error: {e}")
 
 if __name__ == '__main__':

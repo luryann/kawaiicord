@@ -34,6 +34,25 @@ def random_apostrophe(word):
 def random_capitalize(text):
     return ''.join(random.choice([char.upper(), char.lower()]) for char in text)
 
+def random_text_effects(text):
+    effects = [lambda s: s, lambda s: f"*{s}*", lambda s: f"**{s}**", lambda s: f"~~{s}~~", lambda s: f"_{s}_"]
+    return ''.join(random.choice(effects)(char) if char.isalpha() else char for char in text)
+
+def introduce_typo(word):
+    if random.random() < 0.1:  # 10% chance to introduce a typo
+        index = random.randint(0, len(word) - 1)
+        typo_word = word[:index] + random.choice('abcdefghijklmnopqrstuvwxyz') + word[index + 1:]
+        return typo_word
+    return word
+
+def dynamic_insertion(text, user_name):
+    parts = text.split()
+    for i in range(len(parts)):
+        if random.random() < 0.1:  # 10% chance to insert user name or emoji
+            parts[i] = f"{user_name} " + parts[i] if random.choice([True, False]) else parts[i]
+            parts[i] = parts[i] + " " + random.choice(["^-^", ":3", "uwu", "xd", ">///<", "*-*", "^_^", "n_n", "<3", ":d", "❤", "✨"]) if random.choice([True, False]) else parts[i]
+    return ' '.join(parts)
+
 def nlp_process(message):
     # Very basic NLP processing
     words = message.lower().split()
@@ -145,9 +164,12 @@ def generate_response(message):
         user_name=context["user_name"]
     )
 
-    # Randomize apostrophes and capitalization
+    # Randomize apostrophes, capitalization, text effects, and introduce typos
     response = random_apostrophe(response)
     response = random_capitalize(response)
+    response = random_text_effects(response)
+    response = ' '.join([introduce_typo(word) for word in response.split()])
+    response = dynamic_insertion(response, context["user_name"])
 
     return response
 

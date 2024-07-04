@@ -15,6 +15,15 @@ context = {
     "conversation_history": defaultdict(list)
 }
 
+# Sarah's personality details
+sarah_details = {
+    "name": "Sarah",
+    "interests": ["gaming", "anime", "art", "lofi", "k-pop"],
+    "cats": ["Mochi", "Leo"],
+    "birthday": "July 28",
+    "age": 21
+}
+
 def update_mood():
     moods = ["happy", "playful", "teasing", "curious", "flirty", "excited", "chill"]
     context["mood"] = random.choice(moods)
@@ -36,112 +45,66 @@ def nlp_process(message):
     words = [token.text for token in doc]
     return words
 
+def add_extra_letters(word):
+    if word in ["thank", "you", "cute", "sweet", "awesome"]:
+        return word + random.choice(['', 'u', 'uu', 'y', 'yy'])
+    return word
+
 def generate_response(message):
     # Update mood occasionally
     if random.random() < 0.3:
         update_mood()
 
-    # Lowercase message for easier keyword matching
-    message_lower = message.lower()
-    context["previous_message"] = message
-    context["conversation_history"][context["user_name"]].append(message)
+    # Process message with NLP
+    words = nlp_process(message)
 
-    # Response templates with a flirty tone and e-girl lingo
-    templates = {
-        "general": [
-            "omg, that's {synonym1}! {emoji}",
-            "haha, you're {synonym2}! {emoji}",
-            "aww, you're so {synonym3}! {emoji}",
-            "lol, i totally agree! {emoji}",
-            "hehe, you're making me blush! {emoji}",
-            "oh wow, tell me more! {emoji}",
-            "eee, that's so {synonym4}! {emoji}",
-            "hehe, you're the best! {emoji}",
-            "aww, you're adorable! {emoji}",
-            "haha, you're making me giggle! {emoji}",
-            "wow, that's really {synonym4}! {emoji}",
-            "hehe, that's so cool! {emoji}"
-        ],
-        "greeting": [
-            "hii {user_name}! how are you? ^-^",
-            "heyyy {user_name}! what's up? :3",
-            "hello there! how's it going? uwu",
-            "hiya! hope you're having a great day! ^_^"
-        ],
-        "love": [
-            "aww, love you too {user_name}! <3",
-            "you're the best! mwah! :*",
-            "hehe, you're making my heart melt! >///<",
-            "love you lots {user_name}! ^-^"
-        ],
-        "game": [
-            "ohh, what games do you play {user_name}? :3",
-            "gaming is life! what are your favorites? xd",
-            "i love games too! let's play together sometime! ^-^",
-            "what's your top game right now? *-*"
-        ],
-        "compliment": [
-            "aww, thank you {user_name}! you're so sweet! ^-^",
-            "hehe, you're making me blush! >///<",
-            "you're too kind {user_name}! <3",
-            "thanks a lot! you're amazing too! :3",
-            "aww, that's so nice of you! ^-^"
-        ],
-        "feeling": [
-            "i'm feeling great, thanks for asking {user_name}! ^_^",
-            "a bit tired, but i'm happy to chat with you! :3",
-            "feeling awesome! how about you? :d",
-            "i'm good! how are you doing {user_name}? ^-^"
-        ],
-        "thankful": [
-            "aww, thanks a bunch! you're the best! ^-^",
-            "thank you so much! <3",
-            "hehe, that's so sweet of you to say! :3",
-            "thanks, i appreciate it! ^-^"
-        ],
-        "flirty": [
-            "oh, stop it you, {user_name}! ^-^",
-            "aww, you're making me blush, {user_name}! >///<",
-            "haha, you're such a charmer! :3",
-            "oh {user_name}, you're so funny! ^-^",
-            "you always know how to make me smile! <3"
-        ]
+    # Keyword-based responses
+    keyword_responses = {
+        "hello": "hii {user_name}! how are you? ^-^",
+        "hi": "heyyy {user_name}! what's up? :3",
+        "hey": "hello there! how's it going? uwu",
+        "love": "aww, love you too {user_name}! <3",
+        "game": "ohh, what games do you play {user_name}? :3",
+        "games": "gaming is life! what are your favorites? xd",
+        "beautiful": "aww, thank you {user_name}! you're so sweet! ^-^",
+        "pretty": "hehe, you're making me blush! >///<",
+        "cute": "you're too kind {user_name}! <3",
+        "feeling": "i'm feeling great, thanks for asking {user_name}! ^_^",
+        "how are you": "a bit tired, but i'm happy to chat with you! :3",
+        "thanks": "aww, thanks a bunch! you're the best! ^-^",
+        "thank you": "thank you so much! <3"
     }
+
+    # Response templates with Sarah's personality and interests
+    general_templates = [
+        "omg, that's {synonym1}! {emoji}",
+        "haha, you're {synonym2}! {emoji}",
+        "aww, you're so {synonym3}! {emoji}",
+        "lol, i totally agree! {emoji}",
+        "hehe, you're making me blush! {emoji}",
+        "oh wow, tell me more! {emoji}",
+        "eee, that's so {synonym4}! {emoji}",
+        "hehe, you're the best! {emoji}",
+        "aww, you're adorable! {emoji}",
+        "haha, you're making me giggle! {emoji}",
+        "wow, that's really {synonym4}! {emoji}",
+        "hehe, that's so cool! {emoji}"
+    ]
 
     # Emoji and decoration options
     emojis = ["^-^", ":3", "uwu", "xd", ">///<", "*-*", "^_^", "n_n", "<3", ":d", "❤", "✨"]
 
-    # Keyword-based responses
-    keyword_responses = {
-        "hello": templates["greeting"],
-        "hi": templates["greeting"],
-        "hey": templates["greeting"],
-        "love": templates["love"],
-        "game": templates["game"],
-        "games": templates["game"],
-        "beautiful": templates["compliment"],
-        "pretty": templates["compliment"],
-        "cute": templates["compliment"],
-        "feeling": templates["feeling"],
-        "how are you": templates["feeling"],
-        "thanks": templates["thankful"],
-        "thank you": templates["thankful"]
-    }
-
-    # Process message with NLP
-    words = nlp_process(message)
-
     # Select appropriate template based on keywords
+    response_template = None
     for word in words:
         if word in keyword_responses:
-            template = random.choice(keyword_responses[word])
+            response_template = keyword_responses[word]
             break
-    else:
-        # Choose a general or flirty response based on mood
-        template = random.choice(templates["flirty"]) if context["mood"] == "flirty" else random.choice(templates["general"])
+    if not response_template:
+        response_template = random.choice(general_templates)
 
     # Fill in template with dynamic content
-    response = template.format(
+    response = response_template.format(
         synonym1=get_synonym("cool"),
         synonym2=get_synonym("funny"),
         synonym3=get_synonym("sweet"),
@@ -150,21 +113,27 @@ def generate_response(message):
         user_name=context["user_name"]
     )
 
+    # Add extra letters to positive comments
+    response_words = response.split()
+    response = ' '.join([add_extra_letters(word) for word in response_words])
+
     return response
 
-@click.command()
-@click.option('--message', prompt='Enter your message', help='The message you want to send to the e-girl.')
-@click.option('--name', default='user', help='Your name for a personalized experience.')
-def chat(message, name):
+def chat_with_sarah():
     """
     CLI application to chat with an e-girl bot on Discord using predefined rules and templates.
     """
-    context["user_name"] = name
-    try:
-        response = generate_response(message)
-        click.echo(f"E-girl: {response}")
-    except Exception as e:
-        click.echo(f"Error: {e}")
+    while True:
+        message = click.prompt("Enter your message")
+        context["user_name"] = click.prompt("Enter your name", default="user")
+        try:
+            response = generate_response(message)
+            click.echo(f"{sarah_details['name']}: {response}")
+        except Exception as e:
+            click.echo(f"Error: {e}")
+        cont = click.prompt("Do you want to send another message? (yes/no)", default="yes")
+        if cont.lower() != 'yes':
+            break
 
 if __name__ == '__main__':
-    chat()
+    chat_with_sarah()
